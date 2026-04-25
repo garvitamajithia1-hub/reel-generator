@@ -1,0 +1,1912 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- v5-final-20260425 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reel Script Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F9F5EF;
+    --sage: #7A9E7E;
+    --deep: #2C3E2D;
+    --warm: #C4956A;
+    --light-sage: #D4E6D5;
+    --text: #3A3A3A;
+    --muted: #8A8A8A;
+    --card: #FFFFFF;
+    --border: #E8E0D5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--deep);
+    padding: 28px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(122,158,126,0.3) 0%, transparent 60%);
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    color: var(--cream);
+    position: relative;
+    z-index: 1;
+    letter-spacing: -0.5px;
+  }
+
+  header p {
+    color: var(--light-sage);
+    font-size: 0.85rem;
+    margin-top: 6px;
+    position: relative;
+    z-index: 1;
+    font-weight: 300;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 10px;
+  }
+
+  .topic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .topic-btn {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .topic-btn:hover {
+    border-color: var(--sage);
+    background: #f0f7f0;
+  }
+
+  .topic-btn.selected {
+    border-color: var(--sage);
+    background: var(--light-sage);
+  }
+
+  .topic-btn .emoji {
+    font-size: 1.3rem;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .topic-btn .label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--deep);
+    line-height: 1.3;
+  }
+
+  .custom-input-wrap {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 4px 4px 4px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .custom-input-wrap:focus-within {
+    border-color: var(--sage);
+  }
+
+  .custom-input-wrap input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    padding: 10px 0;
+  }
+
+  .custom-input-wrap input::placeholder { color: var(--muted); }
+
+  .format-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .format-chip {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+
+  .format-chip:hover { border-color: var(--warm); }
+  .format-chip.selected { background: var(--warm); border-color: var(--warm); color: white; }
+
+  .generate-btn {
+    width: 100%;
+    background: var(--sage);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+    margin-bottom: 28px;
+  }
+
+  .generate-btn:hover { background: var(--deep); transform: translateY(-1px); }
+  .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .output-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .output-card.visible { display: block; }
+
+  .output-header {
+    background: var(--deep);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .output-header span {
+    font-family: 'Playfair Display', serif;
+    color: var(--cream);
+    font-size: 1rem;
+    font-style: italic;
+  }
+
+  .copy-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+
+  .copy-btn:hover { background: rgba(255,255,255,0.25); }
+
+  .output-body {
+    padding: 24px 20px;
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    min-height: 100px;
+  }
+
+  .loading-dots {
+    display: flex;
+    gap: 6px;
+    padding: 24px 20px;
+    align-items: center;
+  }
+
+  .loading-dots span {
+    width: 8px; height: 8px;
+    background: var(--sage);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-8px); opacity: 1; }
+  }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text);
+  }
+
+  .action-btn:hover { border-color: var(--sage); background: #f0f7f0; }
+  .action-btn.primary { background: var(--sage); color: white; border-color: var(--sage); }
+  .action-btn.primary:hover { background: var(--deep); border-color: var(--deep); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 20px 20px;
+  }
+
+  .automation-section {
+    background: linear-gradient(135deg, #f0f7f0, #fdf6ee);
+    border: 1.5px solid var(--light-sage);
+    border-radius: 14px;
+    padding: 18px;
+    margin-top: 20px;
+    display: none;
+  }
+
+  .automation-section.visible { display: block; animation: fadeUp 0.4s ease; }
+
+  .automation-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--deep);
+    margin-bottom: 12px;
+  }
+
+  .automation-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .automation-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .auto-icon {
+    width: 36px; height: 36px;
+    background: var(--deep);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .auto-content .title {
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: var(--deep);
+    margin-bottom: 3px;
+  }
+
+  .auto-content .desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .tag {
+    display: inline-block;
+    background: var(--light-sage);
+    color: var(--deep);
+    font-size: 0.68rem;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+  }
+
+  .tag.warm { background: #fde8d4; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+  function downloadPDF() {
+    const script = document.getElementById("outputBody").textContent.trim();
+    const title = document.getElementById("outputTitle").textContent;
+    if (!script) { alert("Please generate a script first!"); return; }
+    const automationTips = [
+      { title: "Batch & Schedule with Later or Planoly", desc: "Generate 10 scripts at once, film in a single session, then schedule them to auto-post across the week. Saves 3-5 hrs/week." },
+      { title: "Auto-caption with CapCut or Descript", desc: "Drop your video in - both tools auto-transcribe and style captions in seconds. No manual typing needed. Free tools available." },
+      { title: "Comment Auto-Reply with ManyChat", desc: "When someone comments a keyword like GUT or HORMONE, ManyChat automatically DMs them your freebie or link. Perfect for lead gen. High converting." },
+      { title: "Lead to Email Sequence via Flodesk or Kit", desc: "Connect ManyChat to your email list. Every reel lead gets automatically added and nurtured with a pre-written welcome sequence. Full funnel automation." },
+      { title: "Repurpose Reels with Repurpose.io", desc: "Automatically cross-post every Instagram Reel to TikTok, YouTube Shorts, Pinterest, and Facebook - zero extra effort. 4x your reach instantly." },
+    ];
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 18;
+    const contentW = pageW - margin * 2;
+    let y = 0;
+    function checkPage(needed) { if (y + (needed||10) > pageH - 16) { doc.addPage(); y = 20; } }
+    doc.setFillColor(44, 62, 45);
+    doc.rect(0, 0, pageW, 28, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(249, 245, 239);
+    doc.text("Reel Script Generator", margin, 12);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(212, 230, 213);
+    doc.text("Functional Medicine Health Coach Edition", margin, 20);
+    doc.setFontSize(8);
+    doc.setTextColor(180, 200, 181);
+    const dateStr = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    doc.text(dateStr, pageW - margin, 20, { align: "right" });
+    y = 38;
+    doc.setFillColor(240, 247, 240);
+    doc.roundedRect(margin, y, contentW, 10, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(44, 62, 45);
+    doc.text("REEL SCRIPT: " + title, margin + 4, y + 7);
+    y += 16;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(58, 58, 58);
+    const scriptLines = doc.splitTextToSize(script, contentW);
+    scriptLines.forEach(function(line) { checkPage(6); doc.text(line, margin, y); y += 5.5; });
+    y += 8;
+    checkPage(14);
+    doc.setDrawColor(212, 230, 213);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageW - margin, y);
+    y += 10;
+    doc.setFillColor(44, 62, 45);
+    doc.roundedRect(margin, y, contentW, 10, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(249, 245, 239);
+    doc.text("AUTOMATE THIS REEL WORKFLOW", margin + 4, y + 7);
+    y += 16;
+    automationTips.forEach(function(tip, i) {
+      const descLines = doc.splitTextToSize(tip.desc, contentW - 14);
+      const blockH = 9 + descLines.length * 5 + 6;
+      checkPage(blockH + 4);
+      doc.setFillColor(i % 2 === 0 ? 248 : 242, i % 2 === 0 ? 252 : 246, i % 2 === 0 ? 248 : 242);
+      doc.roundedRect(margin, y, contentW, blockH, 2, 2, "F");
+      doc.setFillColor(44, 62, 45);
+      doc.circle(margin + 6, y + blockH / 2, 4.5, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(44, 62, 45);
+      doc.text(tip.title, margin + 14, y + 7);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(90, 90, 90);
+      descLines.forEach(function(line, li) { doc.text(line, margin + 14, y + 13 + li * 5); });
+      y += blockH + 5;
+    });
+    doc.setFillColor(44, 62, 45);
+    doc.rect(0, pageH - 12, pageW, 12, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(180, 200, 181);
+    doc.text("Generated by Reel Script Generator - Functional Medicine Health Coach Edition", pageW / 2, pageH - 5, { align: "center" });
+    doc.save("reel-script-" + title.toLowerCase().replace(/\s+/g, "-") + ".pdf");
+  }
+
+</script>
+</head>
+<body>
+
+  <header>
+  <h1>Reel Script Generator</h1>
+  <p>Functional Medicine Health Coach Edition</p>
+</header>
+
+<div class="container">
+
+  <div class="section-label">Choose a topic</div>
+  <div class="topic-grid">
+    <button class="topic-btn" onclick="selectTopic(this, 'gut health & digestion')">
+      <span class="emoji">🦠</span>
+      <span class="label">Gut Health & Digestion</span>
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'hormone balance & cortisol')">
+      <span class="emoji">⚖️</span>
+      <span class="label">Hormone Balance</span>
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'blood sugar & energy crashes')">
+      <span class="emoji">🩸</span>
+      <span class="label">Blood Sugar & Energy</span>
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'anti-inflammatory foods & lifestyle')">
+      <span class="emoji">🔥</span>
+      <span class="label">Anti-Inflammatory</span>
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'thyroid health & fatigue')">
+      <span class="emoji">🧠</span>
+      <span class="label">Thyroid & Fatigue</span>
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'detox & liver support')">
+      <span class="emoji">🌿</span>
+      <span class="label">Detox & Liver Support</span>
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'sleep & nervous system reset')">
+      <span class="emoji">🌙</span>
+      <span class="label">Sleep & Nervous System</span>
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'root cause healing vs symptom management')">
+      <span class="emoji">🌱</span>
+      <span class="label">Root Cause Healing</span>
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'functional medicine approach to weight loss & metabolism')">
+      <span class="emoji">⚡</span>
+      <span class="label">Weight Loss & Metabolism</span>
+    </button>
+  </div>
+
+  <div class="section-label">Or type your own topic</div>
+  <div class="custom-input-wrap">
+    <input type="text" id="customTopic" placeholder="e.g. leaky gut, adrenal fatigue, SIBO…" oninput="clearTopicSelection()" />
+  </div>
+
+  <div class="section-label">Reel format</div>
+  <div class="format-row">
+    <button class="format-chip selected" onclick="selectFormat(this, 'talking head with verbal script')">🎤 Talking Head</button>
+    <button class="format-chip" onclick="selectFormat(this, 'POV humor with verbal script')">😂 POV Humor</button>
+    <button class="format-chip" onclick="selectFormat(this, 'myth vs truth with verbal script')">⚡ Myth vs Truth</button>
+    <button class="format-chip" onclick="selectFormat(this, 'day in my life with verbal script')">📅 Day in My Life</button>
+    <button class="format-chip" onclick="selectFormat(this, 'before and after client story with verbal script')">✨ Client Story</button>
+  </div>
+
+  <button class="generate-btn" id="generateBtn" onclick="generateScript()">✦ Generate My Reel Script</button>
+
+  <div class="output-card" id="outputCard">
+    <div class="output-header">
+      <span id="outputTitle">Your Reel Script</span>
+      <button class="copy-btn" onclick="copyScript()">Copy script</button>
+    </div>
+    <div class="loading-dots" id="loadingDots">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="output-body" id="outputBody"></div>
+    <div class="divider"></div>
+    <div class="action-row">
+      <button class="action-btn" onclick="generateScript()">↺ Regenerate</button>
+      <button class="action-btn primary" onclick="showAutomation()">⚡ See Automation Tips</button>
+    </div>
+    <div class="action-row" style="padding-top:0">
+      <button class="action-btn" onclick="downloadPDF()" style="border-color:var(--warm);color:var(--warm);font-weight:500;">⬇ Download Script PDF</button>
+      <button class="action-btn primary" onclick="generateGuideFromScript()" id="guideBtn">🌿 Generate PDF Guide</button>
+    </div>
+    <div class="action-row" style="padding-top:0">
+      <button class="action-btn primary" onclick="generatePresetSolution()" id="presetBtn" style="background:var(--warm);border-color:var(--warm);width:100%;">📲 Generate Preset Solution (Same for All Viewers)</button>
+    </div>
+  </div>
+
+  <!-- PRESET SOLUTION CARD -->
+  <div class="output-card" id="presetOutputCard" style="margin-top:14px;">
+    <div class="output-header" style="background:var(--warm);">
+      <span id="presetOutputTitle">Your Preset ManyChat Solution</span>
+      <button class="copy-btn" onclick="copyPresetContent()">Copy</button>
+    </div>
+    <div class="loading-dots" id="presetLoadingDots"><span></span><span></span><span></span></div>
+    <div class="output-body" id="presetOutputBody"></div>
+    <div class="divider"></div>
+    <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;background:var(--cream);border-radius:8px;padding:10px 12px;">
+        📲 <b>How to use:</b> This is your fixed preset solution. Download the PDF → upload to <b>superprofile.bio/creator</b> → paste your Superprofile link in ManyChat → everyone who comments the keyword gets this guide automatically.
+      </div>
+      <div style="background:linear-gradient(135deg,#f0f7f0,#fdf6ee);border:1.5px solid var(--light-sage);border-radius:10px;padding:12px 14px;">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--deep);margin-bottom:8px;">📋 Your ManyChat DM Script:</div>
+        <div id="presetDMScript" style="font-size:0.8rem;color:var(--text);line-height:1.65;white-space:pre-wrap;"></div>
+      </div>
+      <div class="action-row" style="padding:0;">
+        <button class="action-btn" onclick="generatePresetSolution()">↺ Regenerate</button>
+        <button class="action-btn primary" onclick="downloadPresetPDF()" style="background:var(--warm);border-color:var(--warm);">⬇ Download Preset PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERATED GUIDE CARD -->
+  <div class="output-card" id="guideOutputCard" style="margin-top:14px;">
+    <div class="output-header">
+      <span id="guideOutputTitle">Your ManyChat PDF Guide</span>
+      <button class="copy-btn" onclick="copyGuideContent()">Copy</button>
+    </div>
+    <div class="loading-dots" id="guideLoadingDots"><span></span><span></span><span></span></div>
+    <div class="output-body" id="guideOutputBody"></div>
+    <div class="divider"></div>
+    <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:0.78rem;color:var(--muted);line-height:1.5;background:var(--cream);border-radius:8px;padding:10px 12px;">
+        💡 <b>Next step:</b> Download this guide, upload it to <b>superprofile.bio/creator</b>, then paste the link into ManyChat as your auto-DM for this keyword.
+      </div>
+      <div class="action-row" style="padding:0;">
+        <button class="action-btn" onclick="generateGuideFromScript()">↺ Regenerate Guide</button>
+        <button class="action-btn primary" onclick="downloadGuidePDF()">⬇ Download Guide PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="automation-section" id="automationSection">
+    <h3>⚡ Automate This Reel Workflow</h3>
+
+    <div class="automation-item">
+      <div class="auto-icon">📅</div>
+      <div class="auto-content">
+        <div class="title">Batch & Schedule with Later or Planoly</div>
+        <div class="desc">Generate 10 scripts at once, film in a single session, then schedule them to auto-post across the week.</div>
+        <span class="tag">Saves 3–5 hrs/week</span>
+      </div>
+    </div>
+
+    <div class="automation-item">
+      <div class="auto-icon">✂️</div>
+      <div class="auto-content">
+        <div class="title">Auto-caption with CapCut or Descript</div>
+        <div class="desc">Drop your video in — both tools auto-transcribe and style captions in seconds. No manual typing needed.</div>
+        <span class="tag">Free tools available</span>
+      </div>
+    </div>
+
+    <div class="automation-item">
+      <div class="auto-icon">💬</div>
+      <div class="auto-content">
+        <div class="title">Comment Auto-Reply with ManyChat</div>
+        <div class="desc">When someone comments a keyword like "GUT" or "HORMONE", ManyChat automatically DMs them your freebie or link. Perfect for lead gen.</div>
+        <span class="tag warm">High converting</span>
+      </div>
+    </div>
+
+    <div class="automation-item">
+      <div class="auto-icon">📧</div>
+      <div class="auto-content">
+        <div class="title">Lead → Email Sequence (Flodesk or Kit)</div>
+        <div class="desc">Connect ManyChat to your email list. Every reel lead gets automatically added and nurtured with a pre-written welcome sequence.</div>
+        <span class="tag">Full funnel automation</span>
+      </div>
+    </div>
+
+    <div class="automation-item">
+      <div class="auto-icon">🔁</div>
+      <div class="auto-content">
+        <div class="title">Repurpose Reels with Repurpose.io</div>
+        <div class="desc">Automatically cross-post every Instagram Reel to TikTok, YouTube Shorts, Pinterest, and Facebook — zero extra effort.</div>
+        <span class="tag">4x your reach instantly</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- VIEWER PROMPT SOLUTION SECTION -->
+  <div style="margin-top:36px;">
+    <div style="height:1px;background:var(--border);margin-bottom:28px;"></div>
+    <div class="section-label">✨ Viewer Solution Generator</div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;">
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Viewers type their health struggle below and instantly receive a personalised functional medicine solution — downloadable as a PDF or printable page.</p>
+      <div style="margin-bottom:12px;">
+        <div class="section-label" style="margin-bottom:6px;">Viewer's name (optional)</div>
+        <div class="custom-input-wrap" style="margin-bottom:0;">
+          <input type="text" id="viewerName" placeholder="e.g. Sarah" />
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="section-label" style="margin-bottom:6px;">What's your biggest health struggle?</div>
+        <textarea id="viewerPrompt" placeholder="e.g. I'm always tired after lunch, I can't lose weight no matter what I eat, my bloating is out of control…" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);background:var(--cream);resize:vertical;min-height:90px;outline:none;line-height:1.6;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--sage)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+      <button class="generate-btn" id="viewerBtn" onclick="generateViewerSolution()" style="margin-bottom:0;">🌿 Generate My Personalised Solution</button>
+    </div>
+
+    <div class="output-card" id="viewerOutputCard">
+      <div class="output-header">
+        <span id="viewerOutputTitle">Your Personalised Solution</span>
+        <button class="copy-btn" onclick="copyViewerSolution()">Copy</button>
+      </div>
+      <div class="loading-dots" id="viewerLoadingDots">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="output-body" id="viewerOutputBody"></div>
+      <div class="divider"></div>
+      <div class="action-row">
+        <button class="action-btn" onclick="generateViewerSolution()">↺ Regenerate</button>
+        <button class="action-btn" onclick="printViewerSolution()" style="border-color:var(--sage);color:var(--sage);font-weight:500;">🖨 Print Solution</button>
+        <button class="action-btn primary" onclick="downloadViewerPDF()">⬇ Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANYCHAT PRESET GUIDES SECTION -->
+  <div style="margin-top:36px;">
+    <div style="height:1px;background:var(--border);margin-bottom:28px;"></div>
+    <div class="section-label">📲 ManyChat Preset Guides</div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;">
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">Download your branded PDF guides below. Upload each one to ManyChat and set the matching keyword trigger — viewers comment the keyword on your reel and instantly receive the guide in their DMs. 🔥</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:12px;padding:14px;">
+          <div style="font-size:1.3rem;margin-bottom:6px;">🌿</div>
+          <div style="font-weight:600;font-size:0.85rem;color:var(--deep);margin-bottom:2px;">5-Day Detox Guide</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;">Keyword: <b style="color:var(--sage)">DETOX</b></div>
+          <a href="detox-guide.pdf" download style="display:block;background:var(--deep);color:white;text-align:center;padding:8px;border-radius:8px;font-size:0.78rem;font-weight:500;text-decoration:none;">⬇ Download PDF</a>
+        </div>
+
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:12px;padding:14px;">
+          <div style="font-size:1.3rem;margin-bottom:6px;">🦠</div>
+          <div style="font-weight:600;font-size:0.85rem;color:var(--deep);margin-bottom:2px;">Gut Healing Starter Guide</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;">Keyword: <b style="color:var(--sage)">GUT</b></div>
+          <a href="gut-guide.pdf" download style="display:block;background:var(--deep);color:white;text-align:center;padding:8px;border-radius:8px;font-size:0.78rem;font-weight:500;text-decoration:none;">⬇ Download PDF</a>
+        </div>
+
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:12px;padding:14px;">
+          <div style="font-size:1.3rem;margin-bottom:6px;">⚖️</div>
+          <div style="font-weight:600;font-size:0.85rem;color:var(--deep);margin-bottom:2px;">Hormone Balance Cheat Sheet</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;">Keyword: <b style="color:var(--sage)">HORMONE</b></div>
+          <a href="hormone-guide.pdf" download style="display:block;background:var(--deep);color:white;text-align:center;padding:8px;border-radius:8px;font-size:0.78rem;font-weight:500;text-decoration:none;">⬇ Download PDF</a>
+        </div>
+
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:12px;padding:14px;">
+          <div style="font-size:1.3rem;margin-bottom:6px;">⚡</div>
+          <div style="font-weight:600;font-size:0.85rem;color:var(--deep);margin-bottom:2px;">Functional Weight Loss Blueprint</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;">Keyword: <b style="color:var(--sage)">WEIGHTLOSS</b></div>
+          <a href="weightloss-guide.pdf" download style="display:block;background:var(--deep);color:white;text-align:center;padding:8px;border-radius:8px;font-size:0.78rem;font-weight:500;text-decoration:none;">⬇ Download PDF</a>
+        </div>
+
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:12px;padding:14px;grid-column:span 2;">
+          <div style="font-size:1.3rem;margin-bottom:6px;">🧠</div>
+          <div style="font-weight:600;font-size:0.85rem;color:var(--deep);margin-bottom:2px;">Beat Fatigue in 7 Days</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;">Keyword: <b style="color:var(--sage)">ENERGY</b></div>
+          <a href="energy-guide.pdf" download style="display:block;background:var(--deep);color:white;text-align:center;padding:8px;border-radius:8px;font-size:0.78rem;font-weight:500;text-decoration:none;">⬇ Download PDF</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- HOW TO SETUP MANYCHAT -->
+    <div style="background:linear-gradient(135deg,#f0f7f0,#fdf6ee);border:1.5px solid var(--light-sage);border-radius:14px;padding:18px;">
+      <div style="font-weight:700;font-size:0.95rem;color:var(--deep);margin-bottom:14px;font-family:'Playfair Display',serif;">⚡ How to Set Up ManyChat in 5 Steps</div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="min-width:28px;height:28px;background:var(--deep);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">1</div>
+          <div><div style="font-weight:600;font-size:0.83rem;color:var(--deep);">Go to manychat.com and connect your Instagram</div><div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Make sure your Instagram is a Business or Creator account</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="min-width:28px;height:28px;background:var(--deep);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">2</div>
+          <div><div style="font-weight:600;font-size:0.83rem;color:var(--deep);">Create a new Automation → Instagram Comment trigger</div><div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Set the keyword (e.g. DETOX) as the trigger word</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="min-width:28px;height:28px;background:var(--deep);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">3</div>
+          <div><div style="font-weight:600;font-size:0.83rem;color:var(--deep);">Upload your PDF to Google Drive or Dropbox</div><div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Make the file publicly accessible and copy the share link</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="min-width:28px;height:28px;background:var(--deep);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">4</div>
+          <div><div style="font-weight:600;font-size:0.83rem;color:var(--deep);">Build your DM flow in ManyChat</div><div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">"Hey [Name]! Here's your free [DETOX] guide 🌿 [link]" then add a follow-up asking to book a call</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="min-width:28px;height:28px;background:var(--sage);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">5</div>
+          <div><div style="font-weight:600;font-size:0.83rem;color:var(--deep);">Say it in your reel!</div><div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">"Comment <b>DETOX</b> below and I'll send you my free 5-day detox guide straight to your DMs 👇"</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let selectedTopic = '';
+  let selectedFormat = 'talking head with verbal script';
+
+  function selectTopic(btn, topic) {
+    document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedTopic = topic;
+    document.getElementById('customTopic').value = '';
+  }
+
+  function clearTopicSelection() {
+    document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+    selectedTopic = '';
+  }
+
+  function selectFormat(btn, format) {
+    document.querySelectorAll('.format-chip').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedFormat = format;
+  }
+
+  async function generateScript() {
+    const customTopic = document.getElementById('customTopic').value.trim();
+    const topic = customTopic || selectedTopic;
+
+    if (!topic) {
+      alert('Please choose a topic or type your own!');
+      return;
+    }
+
+    const btn = document.getElementById('generateBtn');
+    const outputCard = document.getElementById('outputCard');
+    const loadingDots = document.getElementById('loadingDots');
+    const outputBody = document.getElementById('outputBody');
+    const outputTitle = document.getElementById('outputTitle');
+
+    btn.disabled = true;
+    btn.textContent = 'Generating…';
+    outputCard.classList.add('visible');
+    loadingDots.style.display = 'flex';
+    outputBody.textContent = '';
+    outputTitle.textContent = `${topic.charAt(0).toUpperCase() + topic.slice(1)} Reel`;
+    document.getElementById('automationSection').classList.remove('visible');
+
+    const prompt = `You are a social media expert for a functional medicine health coach on Instagram. 
+
+Write a complete, engaging Instagram Reel script in the format: "${selectedFormat}"
+Topic: "${topic}"
+
+Include:
+- A strong hook (first 2-3 seconds)
+- Scene-by-scene breakdown with [CLIP] labels
+- Full verbal script (word for word what to say out loud) for each clip
+- On-screen text suggestions
+- A CTA at the end (follow, save, comment keyword, or DM)
+- Emojis throughout to make it scannable
+
+Keep it casual, relatable, and educational but not preachy. Write as if the coach is a knowledgeable best friend, not a clinical doctor. Length: 30-60 seconds when spoken. Format it clearly so it's easy to film from.`;
+
+    try {
+      const response = await fetch("/.netlify/functions/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content?.map(b => b.text || '').join('') || 'Something went wrong. Please try again.';
+
+      loadingDots.style.display = 'none';
+      outputBody.textContent = text;
+
+    } catch (err) {
+      loadingDots.style.display = 'none';
+      outputBody.textContent = 'Error generating script. Please try again.';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '✦ Generate My Reel Script';
+  }
+
+  function copyScript() {
+    const text = document.getElementById('outputBody').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy script', 2000);
+    });
+  }
+
+  function showAutomation() {
+    document.getElementById('automationSection').classList.add('visible');
+    document.getElementById('automationSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function generateViewerSolution() {
+    const prompt = document.getElementById("viewerPrompt").value.trim();
+    const name = document.getElementById("viewerName").value.trim();
+    if (!prompt) { alert("Please describe your health struggle first!"); return; }
+
+    const btn = document.getElementById("viewerBtn");
+    const card = document.getElementById("viewerOutputCard");
+    const dots = document.getElementById("viewerLoadingDots");
+    const body = document.getElementById("viewerOutputBody");
+    const titleEl = document.getElementById("viewerOutputTitle");
+
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+    card.classList.add("visible");
+    dots.style.display = "flex";
+    body.textContent = "";
+    titleEl.textContent = name ? name + "'s Personalised Solution" : "Your Personalised Solution";
+
+    const systemPrompt = `You are an expert functional medicine health coach. A viewer has shared their health struggle. Give them a warm, personalised, actionable solution plan.
+
+Structure your response clearly with these sections:
+1. ROOT CAUSE ANALYSIS - What is likely causing this (2-3 sentences, friendly tone)
+2. TOP 3 FOOD FIXES - Specific foods to add and remove, with brief reasons
+3. DAILY HABITS - 3-4 simple daily habits to start this week
+4. SUPPLEMENT SUPPORT - 2-3 evidence-based supplements to consider (with dosage guidance)
+5. LIFESTYLE SHIFTS - Sleep, stress, movement tips specific to their issue
+6. YOUR ACTION PLAN THIS WEEK - A simple 3-step plan to start immediately
+
+Keep it warm, encouraging, and like advice from a knowledgeable best friend. Not clinical. Use emojis to make it scannable. End with an encouraging sign-off.`;
+
+    const userMsg = name
+      ? `My name is ${name}. My biggest health struggle is: ${prompt}`
+      : `My biggest health struggle is: ${prompt}`;
+
+    try {
+      const response = await fetch("/.netlify/functions/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userMsg }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.map(b => b.text || "").join("") || "Something went wrong. Please try again.";
+      dots.style.display = "none";
+      body.textContent = text;
+    } catch(err) {
+      dots.style.display = "none";
+      body.textContent = "Error generating solution. Please try again.";
+    }
+
+    btn.disabled = false;
+    btn.textContent = "🌿 Generate My Personalised Solution";
+  }
+
+  function copyViewerSolution() {
+    const text = document.getElementById("viewerOutputBody").textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector("#viewerOutputCard .copy-btn");
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = "Copy", 2000);
+    });
+  }
+
+  function printViewerSolution() {
+    const name = document.getElementById("viewerName").value.trim() || "Your";
+    const title = name + (name === "Your" ? "" : "'s") + " Personalised Functional Medicine Solution";
+    const content = document.getElementById("viewerOutputBody").textContent;
+    const prompt = document.getElementById("viewerPrompt").value.trim();
+    if (!content) { alert("Please generate a solution first!"); return; }
+    const win = window.open("", "_blank");
+    win.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'DM Sans', sans-serif; max-width: 680px; margin: 0 auto; padding: 40px 32px; color: #3A3A3A; background: #fff; }
+      .header { background: #2C3E2D; color: #F9F5EF; padding: 28px 32px; border-radius: 12px; margin-bottom: 28px; }
+      .header h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 6px; }
+      .header p { font-size: 0.82rem; color: #D4E6D5; margin: 0; }
+      .prompt-box { background: #F0F7F0; border-left: 4px solid #7A9E7E; padding: 14px 18px; border-radius: 8px; margin-bottom: 24px; font-size: 0.88rem; color: #555; font-style: italic; }
+      .solution { white-space: pre-wrap; line-height: 1.85; font-size: 0.92rem; }
+      .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #E8E0D5; font-size: 0.75rem; color: #999; text-align: center; }
+      @media print { body { padding: 20px; } }
+    </style></head><body>
+    <div class="header">
+      <h1>${title}</h1>
+      <p>Functional Medicine Health Coach · Generated ${new Date().toLocaleDateString("en-GB", {day:"numeric",month:"long",year:"numeric"})}</p>
+    </div>
+    <div class="prompt-box">"${prompt}"</div>
+    <div class="solution">${content.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+    <div class="footer">This plan is for educational purposes only and does not replace professional medical advice. Always consult your healthcare provider.</div>
+    </body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 600);
+  }
+
+  function downloadViewerPDF() {
+    const name = document.getElementById("viewerName").value.trim();
+    const prompt = document.getElementById("viewerPrompt").value.trim();
+    const solution = document.getElementById("viewerOutputBody").textContent.trim();
+    if (!solution) { alert("Please generate a solution first!"); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 18;
+    const contentW = pageW - margin * 2;
+    let y = 0;
+
+    function checkPage(needed) { if (y + (needed||10) > pageH - 18) { doc.addPage(); y = 22; } }
+
+    // Header
+    doc.setFillColor(44, 62, 45);
+    doc.rect(0, 0, pageW, 32, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(249, 245, 239);
+    const pdfTitle = name ? name + "'s Personalised Solution" : "Your Personalised Solution";
+    doc.text(pdfTitle, margin, 13);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(212, 230, 213);
+    doc.text("Functional Medicine Health Coach Edition", margin, 21);
+    doc.setFontSize(7.5);
+    doc.setTextColor(180, 200, 181);
+    const dateStr = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    doc.text(dateStr, pageW - margin, 21, { align: "right" });
+    y = 40;
+
+    // Prompt box
+    doc.setFillColor(240, 247, 240);
+    const promptLines = doc.splitTextToSize('"' + prompt + '"', contentW - 8);
+    const promptH = promptLines.length * 5.5 + 10;
+    doc.roundedRect(margin, y, contentW, promptH, 2, 2, "F");
+    doc.setFillColor(122, 158, 126);
+    doc.rect(margin, y, 3, promptH, "F");
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 80);
+    promptLines.forEach(function(line, i) { doc.text(line, margin + 7, y + 7 + i * 5.5); });
+    y += promptH + 10;
+
+    // Solution heading
+    doc.setFillColor(44, 62, 45);
+    doc.roundedRect(margin, y, contentW, 9, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(249, 245, 239);
+    doc.text("YOUR PERSONALISED FUNCTIONAL MEDICINE PLAN", margin + 4, y + 6.5);
+    y += 15;
+
+    // Solution body
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(58, 58, 58);
+    const lines = doc.splitTextToSize(solution, contentW);
+    lines.forEach(function(line) {
+      checkPage(6);
+      // Style section headers
+      if (line.match(/^[0-9]+\.|ROOT CAUSE|FOOD FIXES|DAILY HABITS|SUPPLEMENT|LIFESTYLE|ACTION PLAN/i)) {
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(44, 62, 45);
+        doc.text(line, margin, y);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(58, 58, 58);
+      } else {
+        doc.text(line, margin, y);
+      }
+      y += 5.5;
+    });
+
+    y += 6;
+    checkPage(14);
+
+    // Disclaimer
+    doc.setFillColor(253, 249, 244);
+    doc.roundedRect(margin, y, contentW, 14, 2, 2, "F");
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7.5);
+    doc.setTextColor(150, 130, 110);
+    const disclaimer = "This plan is for educational purposes only and does not replace professional medical advice. Always consult your healthcare provider before making changes to your health routine.";
+    const disLines = doc.splitTextToSize(disclaimer, contentW - 8);
+    disLines.forEach(function(line, i) { doc.text(line, margin + 4, y + 5 + i * 4.5); });
+    y += 18;
+
+    // Footer
+    doc.setFillColor(44, 62, 45);
+    doc.rect(0, pageH - 10, pageW, 10, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(180, 200, 181);
+    doc.text("Functional Medicine Health Coach · Personalised Wellness Plan", pageW / 2, pageH - 4, { align: "center" });
+
+    const filename = (name ? name.toLowerCase().replace(/\s+/g, "-") + "-" : "") + "functional-medicine-plan.pdf";
+    doc.save(filename);
+  }
+
+
+  let currentGuideContent = '';
+  let currentGuideTopic = '';
+  let currentGuideKeyword = '';
+
+  async function generateGuideFromScript() {
+    const script = document.getElementById("outputBody").textContent.trim();
+    const topic = document.getElementById("outputTitle").textContent;
+    if (!script) { alert("Please generate a reel script first!"); return; }
+
+    const guideBtn = document.getElementById("guideBtn");
+    const card = document.getElementById("guideOutputCard");
+    const dots = document.getElementById("guideLoadingDots");
+    const body = document.getElementById("guideOutputBody");
+    const titleEl = document.getElementById("guideOutputTitle");
+
+    guideBtn.disabled = true;
+    guideBtn.textContent = "Generating guide...";
+    card.classList.add("visible");
+    dots.style.display = "flex";
+    body.textContent = "";
+    titleEl.textContent = topic + " — ManyChat PDF Guide";
+    currentGuideTopic = topic;
+
+    const prompt = `You are a functional medicine health coach content creator named Garvita Kharbanda (@garvita_kharbanda).
+
+Based on this reel script topic: "${topic}"
+
+Create a complete, structured PDF guide for viewers who comment the keyword on your reel. Format it exactly like this:
+
+KEYWORD: [one word in caps that viewers will comment, e.g. DETOX, GUT, SLEEP]
+
+TITLE: [catchy guide title]
+
+SUBTITLE: [one line subtitle]
+
+WHY THIS MATTERS:
+- [Root cause 1 with 1-2 sentence explanation]
+- [Root cause 2 with 1-2 sentence explanation]  
+- [Root cause 3 with 1-2 sentence explanation]
+
+WHAT TO STOP DOING:
+- [Habit 1 to stop + why]
+- [Habit 2 to stop + why]
+- [Habit 3 to stop + why]
+- [Habit 4 to stop + why]
+
+WHAT TO EAT:
+Morning: [specific food/drink]
+Breakfast: [specific meal]
+Mid Morning: [specific snack]
+Lunch: [specific meal]
+Evening: [specific drink]
+Dinner: [specific meal]
+AVOID: [list of foods to avoid]
+
+DAILY ROUTINE:
+[Phase/Day 1]: [focus]
+[Phase/Day 2]: [focus]
+[Phase/Day 3]: [focus]
+[Phase/Day 4]: [focus]
+
+SUPPLEMENTS:
+- [Supplement name] | [dosage] | [benefit]
+- [Supplement name] | [dosage] | [benefit]
+- [Supplement name] | [dosage] | [benefit]
+
+CTA: Comment [KEYWORD] under my reels and I will send this guide straight to your DMs!
+
+Keep it practical, science-backed but friendly. No fluff. Make it genuinely valuable so viewers share it.`;
+
+    try {
+      const response = await fetch("/.netlify/functions/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.map(b => b.text || "").join("") || "Error generating guide. Please try again.";
+      dots.style.display = "none";
+      body.textContent = text;
+      currentGuideContent = text;
+
+      // Extract keyword
+      const kwMatch = text.match(/KEYWORD:\s*([A-Z]+)/);
+      currentGuideKeyword = kwMatch ? kwMatch[1] : topic.toUpperCase().split(" ")[0];
+      titleEl.textContent = currentGuideKeyword + " Guide — Ready for ManyChat";
+
+    } catch(err) {
+      dots.style.display = "none";
+      body.textContent = "Error generating guide. Please try again.";
+    }
+    guideBtn.disabled = false;
+    guideBtn.textContent = "🌿 Generate PDF Guide";
+  }
+
+  function copyGuideContent() {
+    navigator.clipboard.writeText(currentGuideContent).then(() => {
+      const btn = document.querySelector("#guideOutputCard .copy-btn");
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = "Copy", 2000);
+    });
+  }
+
+  function downloadGuidePDF() {
+    if (!currentGuideContent) { alert("Please generate a guide first!"); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 18;
+    const contentW = pageW - margin * 2;
+    let y = 0;
+
+    function checkPage(needed) { if (y + (needed||10) > pageH - 18) { doc.addPage(); y = 22; } }
+
+    const lines = currentGuideContent.split("\n");
+    let titleText = currentGuideTopic;
+    let subtitleText = "";
+    for (const line of lines) {
+      if (line.startsWith("TITLE:")) titleText = line.replace("TITLE:", "").trim();
+      if (line.startsWith("SUBTITLE:")) subtitleText = line.replace("SUBTITLE:", "").trim();
+    }
+
+    // Header
+    doc.setFillColor(44, 62, 45);
+    doc.rect(0, 0, pageW, 30, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(249, 245, 239);
+    doc.text(titleText, margin, 13);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(212, 230, 213);
+    if (subtitleText) doc.text(subtitleText, margin, 21);
+    doc.setFontSize(8);
+    doc.setTextColor(180, 200, 181);
+    doc.text(new Date().toLocaleDateString("en-GB", {day:"numeric",month:"long",year:"numeric"}), pageW - margin, 21, { align: "right" });
+    y = 36;
+
+    // Creator badge
+    doc.setFillColor(240, 247, 240);
+    doc.rect(0, y, pageW, 9, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 130, 100);
+    doc.text("Garvita Kharbanda  |  @garvita_kharbanda  |  superprofile.bio/creator", pageW / 2, y + 6, { align: "center" });
+    y += 15;
+
+    // Keyword badge
+    if (currentGuideKeyword) {
+      doc.setFillColor(122, 158, 126);
+      doc.roundedRect(margin, y, 40, 8, 2, 2, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      doc.text("KEYWORD: " + currentGuideKeyword, margin + 4, y + 5.5);
+      y += 14;
+    }
+
+    // Content
+    const sectionHeaders = ["WHY THIS MATTERS", "WHAT TO STOP DOING", "WHAT TO EAT", "DAILY ROUTINE", "SUPPLEMENTS", "CTA"];
+    
+    for (const line of lines) {
+      if (!line.trim() || line.startsWith("KEYWORD:") || line.startsWith("TITLE:") || line.startsWith("SUBTITLE:")) continue;
+      
+      const isSectionHeader = sectionHeaders.some(h => line.trim().startsWith(h));
+      
+      if (isSectionHeader) {
+        checkPage(14);
+        y += 4;
+        doc.setFillColor(44, 62, 45);
+        doc.roundedRect(margin, y, contentW, 9, 2, 2, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(249, 245, 239);
+        doc.text(line.trim(), margin + 4, y + 6.5);
+        y += 13;
+      } else if (line.trim().startsWith("-")) {
+        checkPage(7);
+        const wrapped = doc.splitTextToSize(line.trim(), contentW - 6);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(58, 58, 58);
+        wrapped.forEach(function(l, i) { doc.text(l, margin + 3, y + i * 5); });
+        y += wrapped.length * 5 + 2;
+      } else if (line.includes("|")) {
+        checkPage(10);
+        const parts = line.split("|").map(p => p.trim());
+        doc.setFillColor(240, 247, 240);
+        doc.roundedRect(margin, y, contentW, 9, 1, 1, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(44, 62, 45);
+        doc.text(parts[0] || "", margin + 4, y + 6);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(196, 149, 106);
+        if (parts[1]) doc.text(parts[1], margin + 58, y + 6);
+        doc.setTextColor(90, 90, 90);
+        if (parts[2]) doc.text(parts[2], margin + 95, y + 6);
+        y += 11;
+      } else if (line.trim()) {
+        checkPage(7);
+        const wrapped = doc.splitTextToSize(line.trim(), contentW);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(58, 58, 58);
+        wrapped.forEach(function(l, i) { doc.text(l, margin, y + i * 5); });
+        y += wrapped.length * 5 + 1;
+      }
+    }
+
+    y += 6;
+    checkPage(20);
+    // CTA footer box
+    doc.setFillColor(44, 62, 45);
+    doc.roundedRect(margin, y, contentW, 22, 3, 3, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(249, 245, 239);
+    doc.text("Ready for a Personalised Plan?", margin + 6, y + 8);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(212, 230, 213);
+    doc.text("Visit: superprofile.bio/creator  |  DM: @garvita_kharbanda", margin + 6, y + 15);
+
+    // Page footer
+    doc.setFillColor(44, 62, 45);
+    doc.rect(0, pageH - 10, pageW, 10, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(180, 200, 181);
+    doc.text("Garvita Kharbanda  |  @garvita_kharbanda  |  superprofile.bio/creator  |  For educational purposes only.", pageW / 2, pageH - 4, { align: "center" });
+
+    doc.save((currentGuideKeyword || "guide").toLowerCase() + "-manychat-guide.pdf");
+  }
+
+
+  let currentPresetContent = '';
+  let currentPresetKeyword = '';
+  let currentPresetTitle = '';
+  let currentPresetDM = '';
+
+  async function generatePresetSolution() {
+    const script = document.getElementById("outputBody").textContent.trim();
+    const topic = document.getElementById("outputTitle").textContent;
+    if (!script) { alert("Please generate a reel script first!"); return; }
+
+    const btn = document.getElementById("presetBtn");
+    const card = document.getElementById("presetOutputCard");
+    const dots = document.getElementById("presetLoadingDots");
+    const body = document.getElementById("presetOutputBody");
+    const titleEl = document.getElementById("presetOutputTitle");
+    const dmEl = document.getElementById("presetDMScript");
+
+    btn.disabled = true;
+    btn.textContent = "Generating preset solution...";
+    card.classList.add("visible");
+    dots.style.display = "flex";
+    body.textContent = "";
+    dmEl.textContent = "";
+    titleEl.textContent = "Generating your preset solution...";
+
+    const prompt = `You are Garvita Kharbanda (@garvita_kharbanda), a functional medicine health coach on Instagram.
+
+Based on this reel topic: "${topic}"
+
+Create TWO things:
+
+PART 1 — PRESET GUIDE CONTENT (exactly like a postpartum belly guide):
+Format it EXACTLY like this — with clean structured sections and tables:
+
+KEYWORD: [one word in caps e.g. SLEEP, BLOATING, STRESS, THYROID]
+TITLE: [catchy guide title e.g. "10-Min Thyroid Reset Guide"]
+SUBTITLE: [one line e.g. "A simple guide for women to heal thyroid naturally without medication"]
+
+THE ROOT CAUSE:
+✔ [Cause 1 Name] — [1 sentence explanation]
+✔ [Cause 2 Name] — [1 sentence explanation]
+✔ [Cause 3 Name] — [1 sentence explanation]
+
+WHAT TO STOP IMMEDIATELY:
+✘ Stop [habit 1] — [brief reason]
+✘ Stop [habit 2] — [brief reason]
+✘ Stop [habit 3] — [brief reason]
+✘ Stop [habit 4] — [brief reason]
+
+YOUR HEALING FOOD PLAN:
+Morning: [specific food/drink]
+Breakfast: [specific meal]
+Mid Morning: [specific snack]
+Lunch: [specific meal]
+Evening: [specific drink]
+Dinner: [specific meal]
+AVOID: [comma separated list of foods to avoid]
+
+DAILY ROUTINE (do this every morning, 40 sec each):
+[Exercise/Habit Name] | [Duration e.g. 2 min] | [Benefit]
+[Exercise/Habit Name] | [Duration e.g. 2 min] | [Benefit]
+[Exercise/Habit Name] | [Duration e.g. 2 min] | [Benefit]
+[Exercise/Habit Name] | [Duration e.g. 2 min] | [Benefit]
+[Exercise/Habit Name] | [Duration e.g. 2 min] | [Benefit]
+
+7-DAY STARTER PLAN:
+Day 1-2: [focus]
+Day 3-4: [focus]
+Day 5-6: [focus]
+Day 7: [focus]
+
+TOP SUPPLEMENTS:
+- [Supplement Name] | [dosage] | [benefit]
+- [Supplement Name] | [dosage] | [benefit]
+- [Supplement Name] | [dosage] | [benefit]
+
+PART 2 — MANYCHAT DM SCRIPT:
+Write Message 1 (instant DM) and Message 2 (24hr follow-up). Include:
+- Warm greeting with [First Name]
+- Link placeholder: superprofile.bio/creator/[keyword-guide]
+- Follow-up inviting free 15-min consultation at superprofile.bio/creator
+- Warm, friendly, knowledgeable best friend tone
+
+Separate Part 1 and Part 2 clearly with: ---DM SCRIPT---`;
+
+    try {
+      const response = await fetch("/.netlify/functions/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1200,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.map(b => b.text || "").join("") || "Error. Please try again.";
+
+      // Split into guide content and DM script
+      const parts = text.split("---DM SCRIPT---");
+      const guideContent = parts[0].trim();
+      const dmScript = parts[1] ? parts[1].trim() : "";
+
+      currentPresetContent = guideContent;
+      currentPresetDM = dmScript;
+
+      // Extract keyword and title
+      const kwMatch = guideContent.match(/KEYWORD:\s*([A-Z]+)/);
+      const titleMatch = guideContent.match(/TITLE:\s*(.+)/);
+      currentPresetKeyword = kwMatch ? kwMatch[1] : topic.toUpperCase().split(" ")[0];
+      currentPresetTitle = titleMatch ? titleMatch[1].trim() : topic;
+
+      dots.style.display = "none";
+      body.textContent = guideContent;
+      dmEl.textContent = dmScript;
+      titleEl.textContent = currentPresetKeyword + " — Preset Solution Ready for ManyChat 📲";
+
+    } catch(err) {
+      dots.style.display = "none";
+      body.textContent = "Error generating preset solution. Please try again.";
+    }
+    btn.disabled = false;
+    btn.textContent = "📲 Generate Preset Solution (Same for All Viewers)";
+  }
+
+  function copyPresetContent() {
+    const full = currentPresetContent + (currentPresetDM ? "\n\n--- MANYCHAT DM SCRIPT ---\n" + currentPresetDM : "");
+    navigator.clipboard.writeText(full).then(() => {
+      const btn = document.querySelector("#presetOutputCard .copy-btn");
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = "Copy", 2000);
+    });
+  }
+
+  function downloadPresetPDF() {
+    if (!currentPresetContent) { alert("Please generate a preset solution first!"); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 16;
+    const contentW = pageW - margin * 2;
+    let y = 0;
+
+    function checkPage(needed) { if (y + (needed||10) > pageH - 20) { doc.addPage(); y = 20; } }
+
+    // Parse the preset content into sections
+    const lines = currentPresetContent.split("\n").map(l => l.trim()).filter(l => l);
+    let sections = {};
+    let currentSection = null;
+    let keyword = currentPresetKeyword || "GUIDE";
+    let title = currentPresetTitle || keyword + " Guide";
+    let subtitle = "";
+
+    for (const line of lines) {
+      if (line.startsWith("KEYWORD:")) { keyword = line.replace("KEYWORD:", "").trim(); continue; }
+      if (line.startsWith("TITLE:")) { title = line.replace("TITLE:", "").trim(); continue; }
+      if (line.startsWith("SUBTITLE:")) { subtitle = line.replace("SUBTITLE:", "").trim(); continue; }
+      const sectionMatch = line.match(/^(THE ROOT CAUSE|WHAT TO STOP|YOUR HEALING FOOD PLAN|YOUR WEEK|TOP SUPPLEMENTS|ACTION PLAN|DAILY ROUTINE|EXERCISE|[0-9]+-DAY|[0-9]+-WEEK)/i);
+      if (sectionMatch) { currentSection = line; sections[line] = []; }
+      else if (currentSection) { sections[currentSection].push(line); }
+    }
+
+    // ---- HEADER ----
+    doc.setFillColor(44, 62, 45);
+    doc.rect(0, 0, pageW, 36, "F");
+    // Decorative circle
+    doc.setFillColor(122, 158, 126);
+    doc.circle(pageW - 20, 10, 18, "F");
+    doc.setFillColor(212, 230, 213);
+    doc.circle(pageW - 20, 10, 12, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(249, 245, 239);
+    const titleLines = doc.splitTextToSize(title, contentW - 20);
+    titleLines.forEach(function(l, i) { doc.text(l, margin, 14 + i * 8); });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(212, 230, 213);
+    if (subtitle) doc.text(subtitle, margin, 14 + titleLines.length * 8 + 2);
+
+    y = 42;
+
+    // Creator line
+    doc.setFillColor(212, 230, 213);
+    doc.rect(0, y - 2, pageW, 10, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(44, 62, 45);
+    doc.text("Garvita Kharbanda  |  @garvita_kharbanda  |  superprofile.bio/creator", pageW/2, y + 5, { align: "center" });
+    y += 14;
+
+    // ---- WHY / ROOT CAUSE SECTION ----
+    const whyKey = Object.keys(sections).find(k => k.toUpperCase().includes("ROOT CAUSE") || k.toUpperCase().includes("WHY"));
+    if (whyKey) {
+      // Section title bar
+      doc.setFillColor(44, 62, 45);
+      doc.rect(margin, y, contentW, 9, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(249, 245, 239);
+      doc.text(whyKey, margin + 4, y + 6.5);
+      y += 12;
+
+      sections[whyKey].forEach(function(point, i) {
+        checkPage(12);
+        const clean = point.replace(/^[-•✔*]+\s*/, "");
+        const colonIdx = clean.indexOf(" — ");
+        const hasLabel = colonIdx > -1 && colonIdx < 30;
+        const label = hasLabel ? clean.substring(0, colonIdx) : "";
+        const desc = hasLabel ? clean.substring(colonIdx + 3) : clean;
+        const bg = i % 2 === 0 ? [240, 247, 240] : [249, 245, 239];
+        const descLines = doc.splitTextToSize((hasLabel ? desc : clean), contentW - (hasLabel ? 52 : 10));
+        const rowH = descLines.length * 5.5 + 10;
+        doc.setFillColor(bg[0], bg[1], bg[2]);
+        doc.roundedRect(margin, y, contentW, rowH, 1, 1, "F");
+        // checkmark
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(122, 158, 126);
+        doc.text("✔", margin + 3, y + rowH/2 + 2);
+        if (hasLabel) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(44, 62, 45);
+          doc.text(label, margin + 10, y + 7);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(80, 80, 80);
+          descLines.forEach(function(l, li) { doc.text(l, margin + 10, y + 13 + li * 5.5); });
+        } else {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(80, 80, 80);
+          descLines.forEach(function(l, li) { doc.text(l, margin + 10, y + rowH/2 - (descLines.length-1)*2.5 + li*5.5); });
+        }
+        y += rowH + 2;
+      });
+      y += 6;
+    }
+
+    // ---- WHAT TO STOP SECTION ----
+    const stopKey = Object.keys(sections).find(k => k.toUpperCase().includes("STOP"));
+    if (stopKey) {
+      checkPage(14);
+      doc.setFillColor(44, 62, 45);
+      doc.rect(margin, y, contentW, 9, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(249, 245, 239);
+      doc.text(stopKey, margin + 4, y + 6.5);
+      y += 12;
+
+      sections[stopKey].forEach(function(point) {
+        checkPage(9);
+        const clean = point.replace(/^[-•✘✗X*]+\s*/, "");
+        const wrapped = doc.splitTextToSize(clean, contentW - 14);
+        const rowH = wrapped.length * 5.5 + 8;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(196, 149, 106);
+        doc.text("✘", margin + 2, y + rowH/2 + 2);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(60, 60, 60);
+        wrapped.forEach(function(l, li) { doc.text(l, margin + 10, y + 6 + li * 5.5); });
+        doc.setDrawColor(232, 224, 213);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y + rowH, margin + contentW, y + rowH);
+        y += rowH + 1;
+      });
+      y += 6;
+    }
+
+    // ---- FOOD PLAN TABLE ----
+    const foodKey = Object.keys(sections).find(k => k.toUpperCase().includes("FOOD") || k.toUpperCase().includes("EAT"));
+    if (foodKey) {
+      checkPage(16);
+      doc.setFillColor(44, 62, 45);
+      doc.rect(margin, y, contentW, 9, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(249, 245, 239);
+      doc.text("What to EAT", margin + 4, y + 6.5);
+      y += 11;
+
+      // Table header
+      doc.setFillColor(122, 158, 126);
+      doc.rect(margin, y, 40, 8, "F");
+      doc.rect(margin + 40, y, contentW - 40, 8, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Time", margin + 3, y + 5.5);
+      doc.text("What to Eat", margin + 43, y + 5.5);
+      y += 8;
+
+      let avoidLine = "";
+      sections[foodKey].forEach(function(line, i) {
+        if (line.toUpperCase().startsWith("AVOID")) { avoidLine = line; return; }
+        const colonIdx = line.indexOf(":");
+        if (colonIdx === -1) return;
+        const time = line.substring(0, colonIdx).trim();
+        const meal = line.substring(colonIdx + 1).trim();
+        checkPage(9);
+        const mealLines = doc.splitTextToSize(meal, contentW - 44);
+        const rowH = mealLines.length * 5 + 8;
+        const bg = i % 2 === 0 ? [212, 230, 213] : [249, 245, 239];
+        doc.setFillColor(bg[0], bg[1], bg[2]);
+        doc.rect(margin, y, 40, rowH, "F");
+        doc.setFillColor(i % 2 === 0 ? 249 : 255, i % 2 === 0 ? 245 : 255, i % 2 === 0 ? 239 : 255);
+        doc.rect(margin + 40, y, contentW - 40, rowH, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(44, 62, 45);
+        doc.text(time, margin + 3, y + rowH/2 + 2);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(60, 60, 60);
+        mealLines.forEach(function(l, li) { doc.text(l, margin + 43, y + 6 + li * 5); });
+        doc.setDrawColor(232, 224, 213);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y + rowH, margin + contentW, y + rowH);
+        doc.line(margin + 40, y, margin + 40, y + rowH);
+        y += rowH;
+      });
+
+      if (avoidLine) {
+        checkPage(9);
+        doc.setFillColor(253, 243, 236);
+        doc.rect(margin, y, contentW, 9, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(196, 149, 106);
+        doc.text("✘  " + avoidLine, margin + 4, y + 6);
+        y += 11;
+      }
+      y += 6;
+    }
+
+    // ---- EXERCISE / DAILY ROUTINE TABLE ----
+    const routineKey = Object.keys(sections).find(k =>
+      k.toUpperCase().includes("ROUTINE") || k.toUpperCase().includes("EXERCISE") || k.toUpperCase().includes("DAILY")
+    );
+    if (routineKey) {
+      checkPage(16);
+      doc.setFillColor(44, 62, 45);
+      doc.rect(margin, y, contentW, 9, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(249, 245, 239);
+      doc.text(routineKey, margin + 4, y + 6.5);
+      y += 11;
+
+      // Table header
+      doc.setFillColor(122, 158, 126);
+      const col1 = 52, col2 = 28, col3 = contentW - 80;
+      doc.rect(margin, y, col1, 8, "F");
+      doc.rect(margin + col1, y, col2, 8, "F");
+      doc.rect(margin + col1 + col2, y, col3, 8, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Exercise / Focus", margin + 3, y + 5.5);
+      doc.text("Duration", margin + col1 + 2, y + 5.5);
+      doc.text("Benefit", margin + col1 + col2 + 3, y + 5.5);
+      y += 8;
+
+      sections[routineKey].forEach(function(line, i) {
+        checkPage(9);
+        const parts = line.split("|").map(p => p.replace(/^[-•*]+\s*/, "").trim());
+        if (parts.length < 2) {
+          // Simple bullet point row
+          const clean = line.replace(/^[-•*]+\s*/, "");
+          const bg = i % 2 === 0 ? [212, 230, 213] : [249, 245, 239];
+          doc.setFillColor(bg[0], bg[1], bg[2]);
+          doc.rect(margin, y, contentW, 8, "F");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(60, 60, 60);
+          doc.text(clean, margin + 3, y + 5.5);
+          y += 8;
+          return;
+        }
+        const bg = i % 2 === 0 ? [212, 230, 213] : [249, 245, 239];
+        doc.setFillColor(bg[0], bg[1], bg[2]);
+        doc.rect(margin, y, col1, 8, "F");
+        doc.setFillColor(i % 2 === 0 ? 240 : 249, i % 2 === 0 ? 247 : 245, i % 2 === 0 ? 240 : 239);
+        doc.rect(margin + col1, y, col2, 8, "F");
+        doc.rect(margin + col1 + col2, y, col3, 8, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(44, 62, 45);
+        doc.text(doc.splitTextToSize(parts[0], col1 - 4)[0], margin + 3, y + 5.5);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(196, 149, 106);
+        if (parts[1]) doc.text(parts[1], margin + col1 + 2, y + 5.5);
+        doc.setTextColor(60, 60, 60);
+        if (parts[2]) doc.text(doc.splitTextToSize(parts[2], col3 - 4)[0], margin + col1 + col2 + 3, y + 5.5);
+        doc.setDrawColor(232, 224, 213);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y + 8, margin + contentW, y + 8);
+        doc.line(margin + col1, y, margin + col1, y + 8);
+        doc.line(margin + col1 + col2, y, margin + col1 + col2, y + 8);
+        y += 8;
+      });
+      y += 6;
+    }
+
+    // ---- WEEK/DAY PLAN TABLE ----
+    const planKey = Object.keys(sections).find(k =>
+      k.toUpperCase().includes("WEEK") || k.toUpperCase().includes("DAY") || k.toUpperCase().includes("STARTER") || k.toUpperCase().includes("ACTION")
+    );
+    if (planKey) {
+      checkPage(16);
+      doc.setFillColor(44, 62, 45);
+      doc.rect(margin, y, contentW, 9, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(249, 245, 239);
+      doc.text(planKey, margin + 4, y + 6.5);
+      y += 11;
+
+      // Header
+      doc.setFillColor(122, 158, 126);
+      doc.rect(margin, y, 40, 8, "F");
+      doc.rect(margin + 40, y, contentW - 40, 8, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Days / Phase", margin + 3, y + 5.5);
+      doc.text("Focus", margin + 43, y + 5.5);
+      y += 8;
+
+      sections[planKey].forEach(function(line, i) {
+        checkPage(9);
+        const clean = line.replace(/^[-•*]+\s*/, "");
+        const colonIdx = clean.search(/[:\-–]/);
+        const phase = colonIdx > -1 ? clean.substring(0, colonIdx).trim() : clean;
+        const focus = colonIdx > -1 ? clean.substring(colonIdx + 1).trim() : "";
+        const focusLines = doc.splitTextToSize(focus || phase, contentW - 44);
+        const rowH = focusLines.length * 5 + 8;
+        const bg = i % 2 === 0 ? [212, 230, 213] : [249, 245, 239];
+        doc.setFillColor(bg[0], bg[1], bg[2]);
+        doc.rect(margin, y, 40, rowH, "F");
+        doc.setFillColor(i % 2 === 0 ? 249 : 255, i % 2 === 0 ? 245 : 255, i % 2 === 0 ? 239 : 255);
+        doc.rect(margin + 40, y, contentW - 40, rowH, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(44, 62, 45);
+        doc.text(phase, margin + 3, y + rowH/2 + 2);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(60, 60, 60);
+        focusLines.forEach(function(l, li) { doc.text(l, margin + 43, y + 6 + li * 5); });
+        doc.setDrawColor(232, 224, 213);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y + rowH, margin + contentW, y + rowH);
+        doc.line(margin + 40, y, margin + 40, y + rowH);
+        y += rowH;
+      });
+      y += 6;
+    }
+
+    // ---- SUPPLEMENTS TABLE ----
+    const suppKey = Object.keys(sections).find(k => k.toUpperCase().includes("SUPPL"));
+    if (suppKey) {
+      checkPage(16);
+      doc.setFillColor(44, 62, 45);
+      doc.rect(margin, y, contentW, 9, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(249, 245, 239);
+      doc.text(suppKey, margin + 4, y + 6.5);
+      y += 11;
+
+      doc.setFillColor(122, 158, 126);
+      doc.rect(margin, y, 50, 8, "F");
+      doc.rect(margin + 50, y, 35, 8, "F");
+      doc.rect(margin + 85, y, contentW - 85, 8, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Supplement", margin + 3, y + 5.5);
+      doc.text("Dosage", margin + 53, y + 5.5);
+      doc.text("Benefit", margin + 88, y + 5.5);
+      y += 8;
+
+      sections[suppKey].forEach(function(line, i) {
+        checkPage(9);
+        const clean = line.replace(/^[-•*]+\s*/, "");
+        const parts = clean.split("|").map(p => p.trim());
+        if (parts.length < 2) return;
+        const bg = i % 2 === 0 ? [212, 230, 213] : [249, 245, 239];
+        doc.setFillColor(bg[0], bg[1], bg[2]);
+        doc.rect(margin, y, 50, 8, "F");
+        doc.setFillColor(i % 2 === 0 ? 240 : 249, i % 2 === 0 ? 247 : 245, i % 2 === 0 ? 240 : 239);
+        doc.rect(margin + 50, y, 35, 8, "F");
+        doc.rect(margin + 85, y, contentW - 85, 8, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(44, 62, 45);
+        doc.text(doc.splitTextToSize(parts[0], 46)[0], margin + 3, y + 5.5);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(196, 149, 106);
+        if (parts[1]) doc.text(parts[1], margin + 53, y + 5.5);
+        doc.setTextColor(60, 60, 60);
+        if (parts[2]) doc.text(doc.splitTextToSize(parts[2], contentW - 89)[0], margin + 88, y + 5.5);
+        doc.setDrawColor(232, 224, 213);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y + 8, margin + contentW, y + 8);
+        doc.line(margin + 50, y, margin + 50, y + 8);
+        doc.line(margin + 85, y, margin + 85, y + 8);
+        y += 8;
+      });
+      y += 8;
+    }
+
+    // ---- CTA BOX ----
+    checkPage(28);
+    doc.setFillColor(44, 62, 45);
+    doc.roundedRect(margin, y, contentW, 26, 3, 3, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(249, 245, 239);
+    doc.text("■  Ready for a Personalised Plan?", margin + 6, y + 9);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(212, 230, 213);
+    doc.text("Book your FREE 15-min Consultation with me today!", margin + 6, y + 16);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(196, 149, 106);
+    doc.text("■  superprofile.bio/creator", margin + 6, y + 22);
+    doc.setTextColor(212, 230, 213);
+    doc.text("■  DM me on Instagram: @garvita_kharbanda", margin + 80, y + 22);
+    y += 30;
+
+    // ---- PAGE FOOTER ----
+    doc.setFillColor(44, 62, 45);
+    doc.rect(0, pageH - 10, pageW, 10, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(180, 200, 181);
+    doc.text("Garvita Kharbanda  |  @garvita_kharbanda  |  superprofile.bio/creator  |  For educational purposes only.", pageW / 2, pageH - 4, { align: "center" });
+
+    doc.save(keyword.toLowerCase() + "-preset-solution.pdf");
+  }
+
+
+  // API Key management
+  function saveApiKey(val) {
+    if (val && val.length > 20) {
+      localStorage.setItem("anthApiKey", val);
+      sessionStorage.setItem("anthApiKey", val);
+      document.getElementById("apiKeyStatus").textContent = "✓ Key saved!";
+      document.getElementById("apiKeyStatus").style.color = "#7A9E7E";
+    } else if (val) {
+      document.getElementById("apiKeyStatus").textContent = "⚠ Key too short";
+      document.getElementById("apiKeyStatus").style.color = "#C4956A";
+    } else {
+      document.getElementById("apiKeyStatus").textContent = "";
+    }
+  }
+
+  function toggleApiKeyVisibility() {
+    const input = document.getElementById("apiKeyInput");
+    const btn = document.getElementById("eyeBtn");
+    if (input.type === "password") { input.type = "text"; btn.textContent = "🙈"; }
+    else { input.type = "password"; btn.textContent = "👁"; }
+  }
+
+  function getApiKey() { return true; }
+
+  // Load key from session on page load
+  window.addEventListener("load", function() {
+    const stored = localStorage.getItem("anthApiKey") || sessionStorage.getItem("anthApiKey");
+    if (stored) {
+      document.getElementById("apiKeyInput").value = stored;
+      document.getElementById("apiKeyStatus").textContent = "✓ Key ready";
+      document.getElementById("apiKeyStatus").style.color = "#7A9E7E";
+    }
+  });
+
+  async function testApiKey() {
+    const btn = document.getElementById("testKeyBtn");
+    btn.textContent = "Testing...";
+    btn.disabled = true;
+    try {
+      const response = await fetch("/.netlify/functions/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 10, messages: [{ role: "user", content: "Hi" }] })
+      });
+      if (response.ok) {
+        document.getElementById("apiKeyStatus").textContent = "✅ Working! Ready to generate!";
+        document.getElementById("apiKeyStatus").style.color = "#7A9E7E";
+        btn.textContent = "✅ Working!";
+      } else {
+        const err = await response.json();
+        document.getElementById("apiKeyStatus").textContent = "❌ Error: " + (err.error?.message || response.status);
+        document.getElementById("apiKeyStatus").style.color = "#ff4444";
+        btn.textContent = "❌ Failed";
+      }
+    } catch(e) {
+      document.getElementById("apiKeyStatus").textContent = "❌ Error: " + e.message;
+      document.getElementById("apiKeyStatus").style.color = "#ff4444";
+      btn.textContent = "❌ Error";
+    }
+    setTimeout(() => { btn.textContent = "Test Key"; btn.disabled = false; }, 3000);
+  }
+
+</script>
+
+</body>
+</html>
